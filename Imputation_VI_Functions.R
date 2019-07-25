@@ -3,19 +3,22 @@
 #Load Packages
 library(randomForest)
 library(randomForestSRC)
-library(missForest)
 library(CALIBERrfimpute)
 library(mice)
 library(MASS)
 
 #function to generate data for simulation described in paper
-Generate_Sim_Data <- function(rho, size=1000){
+Generate_Sim_Data <- function(rho, size=1000, simsetting=1){
   Sigma <- matrix(rho, nrow=6, ncol=6)
   Sigma[1,1] <- Sigma[2,2] <- Sigma[3,3] <- Sigma[4,4] <- Sigma[5,5] <- Sigma[6,6] <- 1
   X <- mvrnorm(n = size, mu=c(0,0,0,0,0,0), Sigma=Sigma, tol = 1e-6, empirical = FALSE, EISPACK = FALSE)
   y <- rep(NA, size)
   epsilon <- rnorm(size,mean=0, sd=1)
+  if (simsetting==1){
   y <- .5*X[,1]+.4*X[,2]+.3*X[,3]+.2*X[,4]+.1*X[,5]+epsilon
+  } else{
+      y <- 0.3*exp(X[,1])-0.4*X[,2]^2 + 0.5*X[,3]*X[,4] +.2*X[,5]+epsilon
+  }  
   DATA <- data.frame(cbind(X,y))
   return(DATA)
 }
@@ -166,8 +169,8 @@ Del_Impute <- function(data, xvar, pvec, ntrees=500, missingness){
 }
 
 #function to generated data, then delete and impute for all variables of interest and measure VI
-Gen_Del_Impute <- function(rho, xvarvec, pvec, size=100, ntrees=500, missingness="MCAR"){
-  DATA <- Generate_Sim_Data(rho, size)
+Gen_Del_Impute <- function(rho, xvarvec, pvec, size=100, ntrees=500, missingness="MCAR", simsetting=1){
+  DATA <- Generate_Sim_Data(rho=rho, size=size, simsetting=simsetting)
   VI <- lapply(X=xvarvec, pvec=pvec, data=DATA, FUN=Del_Impute, missingness=missingness)
   return(VI)
 }
@@ -177,3 +180,6 @@ Del_Impute_wrapper <- function(data, xvarvec, pvec, ntrees=500, missingness="MCA
   VI <- lapply(X=xvarvec, pvec=pvec, data=data, FUN=Del_Impute, missingness=missingness)
   return(VI)
 }
+
+Res <- Gen_Del_Impute(rho=0, xvarvec=4, pvec=c(0.25), size=1000, ntrees=500, missingness="MCAR", simsetting=1)
+Res
