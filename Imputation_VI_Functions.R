@@ -181,5 +181,3 @@ Del_Impute_wrapper <- function(data, xvarvec, pvec, ntrees=500, missingness="MCA
   return(VI)
 }
 
-Res <- Gen_Del_Impute(rho=0, xvarvec=4, pvec=c(0.25), size=1000, ntrees=500, missingness="MCAR", simsetting=1)
-Res

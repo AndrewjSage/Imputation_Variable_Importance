@@ -2,10 +2,10 @@
 
 #Submit this script with: sbatch thefilename
 
-#SBATCH -t 24:00:00   # walltime
+#SBATCH -t 72:00:00   # walltime
 #SBATCH -N 1   # number of nodes in this job
 #SBATCH -n 16   # total number of processor cores in this job
-#SBATCH -J rho75   # job name
+#SBATCH -J CCD   # job name
 #SBATCH --mail-user=ajsage@iastate.edu   # email address
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END
@@ -13,9 +13,10 @@
 
 # Load R module
 module load parallel/20160422
-module load R
+module load r/3.4.3-py2-kaltwmm
 
-R CMD BATCH Sim75.R
+
+R CMD BATCH Sim1_rho25_MNAR.R
 
 exit
 

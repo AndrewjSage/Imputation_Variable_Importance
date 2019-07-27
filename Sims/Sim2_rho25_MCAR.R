@@ -1,5 +1,5 @@
 setwd("/work/STAT/ajsage")
-source("Imputation_Functions.R")
+source("Imputation_VI_Functions.R")
 library(parallel)
 
 #Apply iteratively using parSapply
@@ -14,14 +14,13 @@ clusterExport(cl, c("Impute_and_VI", "CaliberVI", "miceVI", "Gen_Del_Impute", "G
 clusterEvalQ(cl, {
   library(randomForest)
   library(randomForestSRC)
-  library(missForest)
   library(CALIBERrfimpute)
   library(mice)
   library(MASS)
 })
 
 clusterSetRNGStream(cl, 02012018)
-MVVIMP <- parSapply(cl=cl, X=1:100, FUN=function(i){Gen_Del_Impute(rho=0.25, xvarvec=c(1,5),pvec=c(0, 0.1, 0.25, 0.5, 0.75), size=1000, ntrees=500)})
+MVVIMP <- parSapply(cl=cl, X=1:100, FUN=function(i){Gen_Del_Impute(rho=0.25, xvarvec=c(1,3,5),pvec=c(0, 0.1, 0.25, 0.5, 0.75), size=1000, ntrees=500, missingness="MCAR", simsetting=2)})
 stopCluster(cl)
 
-save(MVVIMP, file="MVVIMP_sim25.Rdata")
+save(MVVIMP, file="sim2_rho_25_MCAR.Rdata")
