@@ -7,7 +7,7 @@ library(mlbench)
 data("BostonHousing")
 
 xyabv <- BostonHousing
-
+xyabv$chas <- as.numeric(as.character(xyabv$chas))
 names(xyabv)[14]="y"
 #xabv=xyabv[,-14]
 #yabv=xyabv$y
