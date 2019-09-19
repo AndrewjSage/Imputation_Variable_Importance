@@ -25,21 +25,23 @@ Generate_Sim_Data <- function(rho, size=1000, simsetting=1){
 
 #function to delete a percentage of values, p, for a variable x
 DeleteMissing <- function(data, xvar, p, missingness){
+  data1 <- as.data.frame(apply(data, 2, as.numeric)) #Need to convert to numeric for weighting
+  data1 <- as.data.frame(apply(data1, 2, scale)) # standardize so weighting is consistent
   if(missingness == "MCAR"){
   Miss <- sample(1:nrow(data),p*nrow(data))
   } else if(missingness == "MAR"){
     var <- sample(setdiff((1:(ncol(data)-1)), c(xvar)), 1)
-    weights <- 1/(1+exp(-3*data[,var]))  #assign sampling weights according to another randomly chosen x variable
+    weights <- 1/(1+exp(-3*data1[,var]))  #assign sampling weights according to another randomly chosen x variable
     if(rbinom(1,0,1)==1){ #randomly determine whether to sample high or low values more heavily
       weights==1-weights
     }
-    Miss <- sample(1:nrow(data),p*nrow(data), prob=weights)
+    Miss <- sample(1:nrow(data1),p*nrow(data1), prob=weights)
   } else if(missingness == "MNAR"){
-    weights <- 1/(1+exp(-3*data[,xvar])) #assign sampling weights according to variable being deleted/imputed
+    weights <- 1/(1+exp(-3*data1[,xvar])) #assign sampling weights according to variable being deleted/imputed
     if(rbinom(1,0,1)==1){ #randomly determine whether to sample high or low values more heavily
     weights==1-weights
     }
-    Miss <- sample(1:nrow(data),p*nrow(data), prob=1/(1+exp(-3*data[,xvar])))
+    Miss <- sample(1:nrow(data1),p*nrow(data1), prob=1/(1+exp(-3*data1[,xvar])))
   } else{ stop("missingness must be set to either 'MCAR', 'MAR', or 'MNAR'")
   }
   data[Miss, xvar] <- NA
