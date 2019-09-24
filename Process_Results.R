@@ -1,5 +1,8 @@
+library(tidyverse)
+library(gridExtra)
+
 load("sim1_rho_75_MCAR.Rdata")
-MVVIMP[1,1] #dims are 3x100, 3 different variables deleted/imputed, 100 different reps
+#dims of MVVIMP are 3x100, 3 different variables deleted/imputed, 100 different reps
 #MVVIMP[a,b] is a list of 5 6x9 matrices. These correspond to:
         # 5 proportions of missingness (0, .1, .25, .5, .75)
         # 6 explanatory variables (x1, x2, x3, x4, x5, x6)
@@ -39,6 +42,7 @@ SummaryFunc <- function(Obj){
 }
 
 #Given variable deleted, compute summary in dataframe format for graphing
+#Array argument is an object from SummaryFunc
 #here xvar indexing only includes those who were deleted and imputed. (1=x1, 2=x3, 3=x5 when deleted vars are x1, x3, x5)
 Summarydf <- function(Array, xvar, pind){  #take in array with mean variable importance for each setting, and the xvar, prop of interest
   MEANIMP <- apply(Array, c(1,3,4,5), mean)
@@ -82,30 +86,36 @@ g_legend<-function(a.gplot){
 #################################################################
 
 #x1 deleted and imputed using MAR
-load("sim1_rho_0_MAR.Rdata")
-sim=1
-rho=0
-type="MAR"
+sim <- 1
+xvar <- 1
+xvarused <- c(1,3,5)
+ylower <- 0
+yupper <- 0.5
+type="MCAR"
+
+rho <- 0
 load(paste("sim",sim,"_rho_",rho,"_",type,".Rdata", sep = ""))
-
 A <- SummaryFunc(MVVIMP)
-dfList <- lapply(X=1:5, FUN=Summarydf, Array=A, xvar=1)
-p1 <- Createplot(dfList, xvar=1)+ theme(legend.position = "bottom")+ylim(c(0,0.5))+ggtitle(expression(paste(rho,"=0")))
+dfList <- lapply(X=1:5, FUN=Summarydf, Array=A, xvar=which(xvarused==xvar))
+p1 <- Createplot(dfList, xvar=xvar)+ theme(legend.position = "bottom")+ylim(c(ylower,yupper))+ggtitle(expression(paste(rho,"=0")))
 
-load("sim1_rho_25_MAR.Rdata")
+rho <- 25
+load(paste("sim",sim,"_rho_",rho,"_",type,".Rdata", sep = ""))
 A <- SummaryFunc(MVVIMP)
-dfList <- lapply(X=1:5, FUN=Summarydf, Array=A, xvar=1)
-p2 <- Createplot(dfList, xvar=1)+ylim(c(0,0.5))+ggtitle(expression(paste(rho,"=0.25")))
+dfList <- lapply(X=1:5, FUN=Summarydf, Array=A, xvar=which(xvarused==xvar))
+p2 <- Createplot(dfList, xvar=xvar)+ theme(legend.position = "bottom")+ylim(c(ylower,yupper))+ggtitle(expression(paste(rho,"=0.25")))
 
-load("sim1_rho_50_MAR.Rdata")
+rho <- 50
+load(paste("sim",sim,"_rho_",rho,"_",type,".Rdata", sep = ""))
 A <- SummaryFunc(MVVIMP)
-dfList <- lapply(X=1:5, FUN=Summarydf, Array=A, xvar=1)
-p3 <- Createplot(dfList, xvar=1)+ylim(c(0,0.5))+ggtitle(expression(paste(rho,"=0.50")))
+dfList <- lapply(X=1:5, FUN=Summarydf, Array=A, xvar=which(xvarused==xvar))
+p3 <- Createplot(dfList, xvar=xvar)+ theme(legend.position = "bottom")+ylim(c(ylower,yupper))+ggtitle(expression(paste(rho,"=0.5")))
 
-load("sim1_rho_75_MAR.Rdata")
+rho <- 75
+load(paste("sim",sim,"_rho_",rho,"_",type,".Rdata", sep = ""))
 A <- SummaryFunc(MVVIMP)
-dfList <- lapply(X=1:5, FUN=Summarydf, Array=A, xvar=1)
-p4 <- Createplot(dfList, xvar=1)+ylim(c(0,0.5))+ggtitle(expression(paste(rho,"=0.75")))
+dfList <- lapply(X=1:5, FUN=Summarydf, Array=A, xvar=which(xvarused==xvar))
+p4 <- Createplot(dfList, xvar=xvar)+ theme(legend.position = "bottom")+ylim(c(ylower,yupper))+ggtitle(expression(paste(rho,"=0.75")))
 
 #Put plots together
 
