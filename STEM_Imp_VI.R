@@ -4,13 +4,29 @@ STEM <- readRDS("Sims/STEM1.rds")  #Include all students, not only those who sta
 STEM <- STEM[STEM$Year==2016, ]
 STEM$`Learning Community Participation` <- as.numeric(STEM$`Learning Community Participation`!=0)
 STEM <- STEM[, c(3, 5, 6, 26, 27, 30, 31, 32, 40, 47, 50, 54, 55, 56, 57, 62)]
+varnames <- c("ACT",                            
+              "GPA",                                
+              "Gender",                                         
+              "Athlete",                                    
+              "Age",                                            
+              "ALEKS",             
+              "LC",               
+               "STEM Interest",     
+               "Remedial Math",            
+              "Parent Education",                         
+              "Hrs. Studying*",
+              "Academic Skills*",                       
+              "Social Integration*",                    
+              "Peer Connections*",                      
+              "Self Efficacy*",        
+              "Class"  )
 names(STEM) <- c("x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10", "x11", "x12", "x13", "x14", "x15", "y")
 
 
 Propmiss <- function(x){
   sum(is.na(x)/length(x))  
 }
-apply(STEM, 2, Propmiss)
+round(apply(STEM, 2, Propmiss),3)
 
 
 
@@ -137,4 +153,13 @@ IMPdf <- data.frame(Technique, Variable, Importance)
 ggplot(data=IMPdf, aes(x=Technique, y=Importance)) + geom_col() + facet_grid(. ~ Variable)
 
 ggplot(data=IMPdf, aes(x=Variable, y=Importance)) + geom_col() + facet_grid(. ~ Technique)
+
+STEM1 <- STEM[complete.cases(STEM),]
+library(corrplot)
+
+STEM2 <- STEM1[, c(1, 2, 5, 6, 11:15) ]
+M <- cor(STEM2)
+corrplot(M)
+
+
 
