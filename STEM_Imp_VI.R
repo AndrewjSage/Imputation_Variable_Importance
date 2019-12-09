@@ -66,79 +66,86 @@ miceVImvt <- function(x,y){
 
 
 
-ntechs=9
+ntechs <- 10
+nreps <- 10
 x <- STEM[,-ncol(STEM)]
 y <- STEM[,ncol(STEM)]
-VI <- array(NA, dim=c(ncol(x), ntechs))  #rows correspond to variables, columns to imputation techniques
+VI <- array(NA, dim=c(nreps, ncol(x), ntechs))  #rows correspond to variables, columns to imputation techniques
 
+set.seed(12062019)
 
-
+for (it in 1:nreps){
 #Strawman-median imputation
 tech <- 1
 Imputed <- cbind(na.roughfix(x), y)
 rfMiss <- rfsrc(y~., data=Imputed, ntree=500,importance=TRUE)
-if(is.factor(y)){VI[,tech]<-rfMiss$importance[,1]}else{VI[,tech]<-rfMiss$importance}
+if(is.factor(y)){VI[it,,tech]<-rfMiss$importance[,1]}else{VI[it,,tech]<-rfMiss$importance}
 
 #rfimpute
 tech <- 2
 Imputed <- rfImpute(x, y, iter=5)[,c(2:(ncol(x)+1),1)]
 rfMiss <- rfsrc(y~., data=Imputed, ntree=500,importance=TRUE)
-if(is.factor(y)){VI[,tech]<-rfMiss$importance[,1]}else{VI[,tech]<-rfMiss$importance}
+if(is.factor(y)){VI[it,,tech]<-rfMiss$importance[,1]}else{VI[it,,tech]<-rfMiss$importance}
 
 #Impute using missForest
 tech <- 3
 ImputedX <- impute(data = x, mf.q = 1/ncol(x))
 Imputed <- cbind(ImputedX, y)
 rfMiss <- rfsrc(y~., data=Imputed, ntree=500,importance=TRUE)
-if(is.factor(y)){VI[,tech]<-rfMiss$importance[,1]}else{VI[,tech]<-rfMiss$importance} #If y is a factor, permutation importance is given in 1st col. Otherwise just a vector
+if(is.factor(y)){VI[it,,tech]<-rfMiss$importance[,1]}else{VI[it,,tech]<-rfMiss$importance} #If y is a factor, permutation importance is given in 1st col. Otherwise just a vector
 
 #Impute using RFSRC-1 iteration
 tech <- 4
 rfMiss <- rfsrc(y~., data=STEM, ntree=500,importance=c("permute"), na.action=c("na.impute"), nimpute=1)
-if(is.factor(y)){VI[,tech]<-rfMiss$importance[,1]}else{VI[,tech]<-rfMiss$importance} #If y is a factor, permutation importance is given in 1st col. Otherwise just a vector
+if(is.factor(y)){VI[it,,tech]<-rfMiss$importance[,1]}else{VI[it,,tech]<-rfMiss$importance} #If y is a factor, permutation importance is given in 1st col. Otherwise just a vector
 
 #Impute using RFSRC-5 iterations
 tech <- 5
 rfMiss <- rfsrc(y~., data=STEM, ntree=500,importance=c("permute"), na.action=c("na.impute"), nimpute=5)
-if(is.factor(y)){VI[,tech]<-rfMiss$importance[,1]}else{VI[,tech]<-rfMiss$importance} #If y is a factor, permutation importance is given in 1st col. Otherwise just a vector
+if(is.factor(y)){VI[it,,tech]<-rfMiss$importance[,1]}else{VI[it,,tech]<-rfMiss$importance} #If y is a factor, permutation importance is given in 1st col. Otherwise just a vector
 
 # RFSRC unsupervised - 1 iteration
 tech <- 6  
 ImputedX <- impute(data = x, nimpute = 1)
 Imputed <- cbind(ImputedX, y)
 rfMiss <- randomForest(y~., data=Imputed, ntree=500,importance=TRUE)
-if(is.factor(y)){VI[,tech]<-rfMiss$importance[,3]}else{VI[,tech]<-rfMiss$importance[,1]} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
+if(is.factor(y)){VI[it,,tech]<-rfMiss$importance[,3]}else{VI[it,,tech]<-rfMiss$importance[,1]} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
 
 # RFSRC unsupervised - 5 iterations
 tech <- 7
 ImputedX <- impute(data = x, nimpute = 5)
 Imputed <- cbind(ImputedX, y)
 rfMiss <- randomForest(y~., data=Imputed, ntree=500,importance=TRUE)
-if(is.factor(y)){VI[,tech]<-rfMiss$importance[,3]}else{VI[,tech]<-rfMiss$importance[,1]} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
+if(is.factor(y)){VI[it,,tech]<-rfMiss$importance[,3]}else{VI[it,,tech]<-rfMiss$importance[,1]} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
 
 #Impute using CALIBER
 #since this is a multiple imputation technique, perform nmult times then average VI
 tech <- 8
 VImat <- replicate(n=5, CaliberVImvt(x,y))
 VImat1 <- apply(VImat, 2, function(x){x/sum(x)}) #scale so each rep counts equally
-VI[,tech] <- rowMeans(VImat)
+VI[it,,tech] <- rowMeans(VImat)
 
 #Impute using mice
 #since this is a multiple imputation technique, perform nmult times then average VI
 tech <- 9
 VImat <- replicate(n=5, miceVImvt(x,y))
 VImat1 <- apply(VImat, 2, function(x){x/sum(x)}) #scale so each rep counts equally
-VI[,tech] <- rowMeans(VImat)
+VI[it,,tech] <- rowMeans(VImat)
+
+
+#Complete Cases
+tech <- 10
+STEMsubset <- STEM[complete.cases(STEM),]
+randomForest(y~., data=STEMsubset, ntree=500,importance=TRUE)
+VI[it,,tech] <- rfMiss$importance[,1]/sum(rfMiss$importance[,1])
+
+print(it)
+}
+
 
 VI[VI<0]<-0
 
 VIsc <- apply(VI, 2, function(x){x/sum(x)}) #scale so each rep counts equally
-
-STEMsubset <- STEM[complete.cases(STEM),]
-randomForest(y~., data=STEMsubset, ntree=500,importance=TRUE)
-VIcc <- rfMiss$importance[,1]/sum(rfMiss$importance[,1])
-
-VIcomb <- cbind(VIsc, VIcc)
 
 round(VIcomb, 3)
 
