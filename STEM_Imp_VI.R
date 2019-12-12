@@ -1,6 +1,12 @@
 source("Imputation_VI_Functions.R")
 
-STEM <- readRDS("Sims/STEM1.rds")  #Include all students, not only those who stayed at ISU
+library(randomForest)
+library(randomForestSRC)
+library(CALIBERrfimpute)
+library(mice)
+library(MASS)
+
+STEM <- readRDS("STEM1.rds")  #Include all students, not only those who stayed at ISU
 STEM <- STEM[STEM$Year==2016, ]
 STEM$`Learning Community Participation` <- as.numeric(STEM$`Learning Community Participation`!=0)
 STEM <- STEM[, c(3, 5, 6, 26, 27, 30, 31, 32, 40, 47, 50, 54, 55, 56, 57, 62)]
@@ -40,8 +46,8 @@ CaliberVImvt <- function(x, y){
   ImputedX <- data.frame(matrix(vecdata, nrow=nrow(x), ncol=ncol(x), byrow=FALSE))
   names(ImputedX) <- names(x)
   Imputed <- cbind(ImputedX, y)
-  rfMiss=randomForest(y~., data <- Imputed, ntree=500,importance=TRUE)
-  if(is.factor(y)){VIvec <- rfMiss$importance[,3]}else{VIvec <- rfMiss$importance[,1]} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
+  rfMiss=rfsrc(y~., data <- Imputed, ntree=500,importance=TRUE)
+  if(is.factor(y)){VIvec <- rfMiss$importance[,1]}else{VIvec <- rfMiss$importance} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
   return(VIvec) 
 }
 
@@ -57,8 +63,8 @@ miceVImvt <- function(x,y){
   ImputedX <- data.frame(matrix(vecdata, nrow=nrow(x), ncol=ncol(x), byrow=FALSE))
   names(ImputedX) <- names(x)
   Imputed <- cbind(ImputedX, y)
-  rfMiss=randomForest(y~., data <- Imputed, ntree=500,importance=TRUE)
-  if(is.factor(y)){VIvec <- rfMiss$importance[,3]}else{VIvec <- rfMiss$importance[,1]} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
+  rfMiss=rfsrc(y~., data <- Imputed, ntree=500,importance=TRUE)
+  if(is.factor(y)){VIvec <- rfMiss$importance[,1]}else{VIvec <- rfMiss$importance} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
   return(VIvec) 
 }
 
@@ -108,15 +114,15 @@ if(is.factor(y)){VI[it,,tech]<-rfMiss$importance[,1]}else{VI[it,,tech]<-rfMiss$i
 tech <- 6  
 ImputedX <- impute(data = x, nimpute = 1)
 Imputed <- cbind(ImputedX, y)
-rfMiss <- randomForest(y~., data=Imputed, ntree=500,importance=TRUE)
-if(is.factor(y)){VI[it,,tech]<-rfMiss$importance[,3]}else{VI[it,,tech]<-rfMiss$importance[,1]} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
+rfMiss <- rfsrc(y~., data=Imputed, ntree=500,importance=TRUE)
+if(is.factor(y)){VI[it,,tech]<-rfMiss$importance[,1]}else{VI[it,,tech]<-rfMiss$importance} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
 
 # RFSRC unsupervised - 5 iterations
 tech <- 7
 ImputedX <- impute(data = x, nimpute = 5)
 Imputed <- cbind(ImputedX, y)
-rfMiss <- randomForest(y~., data=Imputed, ntree=500,importance=TRUE)
-if(is.factor(y)){VI[it,,tech]<-rfMiss$importance[,3]}else{VI[it,,tech]<-rfMiss$importance[,1]} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
+rfMiss <- rfsrc(y~., data=Imputed, ntree=500,importance=TRUE)
+if(is.factor(y)){VI[it,,tech]<-rfMiss$importance[,1]}else{VI[it,,tech]<-rfMiss$importance} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
 
 #Impute using CALIBER
 #since this is a multiple imputation technique, perform nmult times then average VI
@@ -136,20 +142,32 @@ VI[it,,tech] <- rowMeans(VImat)
 #Complete Cases
 tech <- 10
 STEMsubset <- STEM[complete.cases(STEM),]
-randomForest(y~., data=STEMsubset, ntree=500,importance=TRUE)
-VI[it,,tech] <- rfMiss$importance[,1]/sum(rfMiss$importance[,1])
+RF <- rfrsc(y~., data=STEMsubset, ntree=500,importance=TRUE)
+VI[it,,tech] <- RF$importance/sum(RF$importance)
 
 print(it)
 }
 
+###############################################
+VI <- readRDS("STEMVIRes.rds")
+#1st index is for repetition
+#2nd index is for variable 
+#3rd index is for imputation technique
 
 VI[VI<0]<-0
 
-VIsc <- apply(VI, 2, function(x){x/sum(x)}) #scale so each rep counts equally
+for (i in 1:10){
+VIsc[i,,] <- apply(VI[i,,], 2, function(x){x/sum(x)}) #scale so each rep counts equally
+}
 
-round(VIcomb, 3)
+MeanVI <- apply(VIsc, c(2,3), mean) #average over reps
+SEVI <- apply(VIsc, c(2,3), function(x){sd(x)/sqrt(length(x))})
 
-###############################################
+round(MeanVI, 3)
+
+round(MeanVI-qt(.975,10)*SEVI, 3)
+round(MeanVI+qt(.975,10)*SEVI, 3)
+
 
 #Setup dataframe to show results
 Technique <- rep(1:10, each=15)

@@ -60,8 +60,8 @@ CaliberVI <- function(x, y, ntreesimp, ntrees, xvar){
     }
     Imputed <- cbind(ImputedX, y)} else{
      Imputed <- cbind(x,y)}
-  rfMiss=randomForest(y~., data=Imputed, ntree=ntrees,importance=TRUE)
-  if(is.factor(y)){VIvec <- rfMiss$importance[,3]}else{VIvec <- rfMiss$importance[,1]} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
+  rfMiss=rfsrc(y~., data=Imputed, ntree=ntrees,importance=TRUE)
+  if(is.factor(y)){VIvec <- rfMiss$importance[,1]}else{VIvec <- rfMiss$importance} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
   return(VIvec) 
 }
 
@@ -73,8 +73,8 @@ miceVI <- function(x,y,ntreesimp, ntrees, xvar){
     ImputedX[is.na(x[,xvar]),xvar] <- mice.impute.rf(x[,xvar],!is.na(x[,xvar]), x[,-c(xvar, ncol(x))], iter=5, ntree=ntreesimp)
     Imputed <- cbind(ImputedX, y)} else{
       Imputed <- cbind(x,y)}   
-  rfMiss=randomForest(y~., data <- Imputed, ntree=ntrees,importance=TRUE)
-  if(is.factor(y)){VIvec <- rfMiss$importance[,3]}else{VIvec <- rfMiss$importance[,1]} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
+  rfMiss=rfsrc(y~., data <- Imputed, ntree=ntrees,importance=TRUE)
+  if(is.factor(y)){VIvec <- rfMiss$importance[,1]}else{VIvec <- rfMiss$importance} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
   return(VIvec) 
   }
 
@@ -134,8 +134,8 @@ Impute_and_VI <- function(data, ntreesimp=300, ntrees=500, nmult=5, ntechs=9, xv
     Imputed <- cbind(ImputedX, y)} else{  
     Imputed <- data
     }
-  rfMiss <- randomForest(y~., data=Imputed, ntree=ntrees,importance=TRUE)
-  if(is.factor(y)){VI[,tech]<-rfMiss$importance[,3]}else{VI[,tech]<-rfMiss$importance[,1]} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
+  rfMiss <- rfsrc(y~., data=Imputed, ntree=ntrees,importance=TRUE)
+  if(is.factor(y)){VI[,tech]<-rfMiss$importance[,1]}else{VI[,tech]<-rfMiss$importance} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
   
   # RFSRC unsupervised - 5 iterations
   tech <- 7
@@ -144,8 +144,8 @@ Impute_and_VI <- function(data, ntreesimp=300, ntrees=500, nmult=5, ntechs=9, xv
     Imputed <- cbind(ImputedX, y)} else{  
     Imputed <- data
     }
-  rfMiss <- randomForest(y~., data=Imputed, ntree=ntrees,importance=TRUE)
-  if(is.factor(y)){VI[,tech]<-rfMiss$importance[,3]}else{VI[,tech]<-rfMiss$importance[,1]} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
+  rfMiss <- rfsrc(y~., data=Imputed, ntree=ntrees,importance=TRUE)
+  if(is.factor(y)){VI[,tech]<-rfMiss$importance[,1]}else{VI[,tech]<-rfMiss$importance} #If y is a factor, permutation importance is given in 3rd col. Otherwise first
   
   #Impute using CALIBER
   #since this is a multiple imputation technique, perform nmult times then average VI
