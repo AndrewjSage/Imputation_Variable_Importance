@@ -1,6 +1,6 @@
 source("Imputation_VI_Functions.R")
 
-STEM <- readRDS("Sims/STEM1.rds")  #Include all students, not only those who stayed at ISU
+STEM <- readRDS("STEM1.rds")  #Include all students, not only those who stayed at ISU
 STEM <- STEM[STEM$Year==2016, ]
 STEM$`Learning Community Participation` <- as.numeric(STEM$`Learning Community Participation`!=0)
 STEM <- STEM[, c(3, 5, 6, 26, 27, 30, 31, 32, 40, 47, 50, 54, 55, 56, 57, 62)]

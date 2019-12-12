@@ -108,7 +108,7 @@ ggsave(filename="Sim2_x5_MNAR.eps", plot = p, device = "eps", path = NULL,
 #Results for different types of missingness
 
 Combined_Graphic_Miss_Types(rho=25, sim=1, xvar=5, xvarused=c(1,3,5), ylower=0, yupper=0.25)
-ggsave(filename="Sim1_x5_rho75.eps", plot = p, device = "eps", path = NULL,
+ggsave(filename="Sim1_x5_rho25.eps", plot = p, device = "eps", path = NULL,
        scale = 1, width = 7, height = 7, units = "in",
        dpi = 300, limitsize = TRUE)
 

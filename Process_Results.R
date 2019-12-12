@@ -56,7 +56,7 @@ Summarydf <- function(Array, xvar, pind){  #take in array with mean variable imp
   var <- rep(1:dim(Array)[4], ntechs)  #list pred. vars 1:dim(Array)[4], repeated for each of 6 techniques
   pvec <- c(0, 0.10, 0.25, 0.50, 0.75)
   p <- rep(pvec[pind], dim(Array)[4]*ntechs)
-  Techs <- c("median", "rfImpute", "missForest", "rfsrc-1s", "rfsrc-5s", "rfsrc-1u", "rfsrc-5u","CALIBER", "rfmice")
+  Techs <- c("Strawman", "RF-prx", "mF", "RF-otf(1)", "RF-otf(5)", "RF-unsv(1)", "RF-unsv(5)","RF-cal", "RF-mice")
   Method <- rep(Techs, each=dim(Array)[4])
   Lower <- VI-qnorm(0.975)*SD/sqrt(n)
   Upper <- VI+qnorm(0.975)*SD/sqrt(n)
