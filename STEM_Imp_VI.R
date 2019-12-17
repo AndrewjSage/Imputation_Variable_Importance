@@ -160,11 +160,11 @@ VI <- readRDS("STEMVIRes.rds")
 VI[VI<0]<-0
 
 for (i in 1:10){
-VIsc[i,,] <- apply(VI[i,,], 2, function(x){x/sum(x)}) #scale so each rep counts equally
+VI[i,,] <- apply(VI[i,,], 2, function(x){x/sum(x)}) #scale so each rep counts equally
 }
 
-MeanVI <- apply(VIsc, c(2,3), mean) #average over reps
-SEVI <- apply(VIsc, c(2,3), function(x){sd(x)/sqrt(length(x))})
+MeanVI <- apply(VI, c(2,3), mean) #average over reps
+SEVI <- apply(VI, c(2,3), function(x){sd(x)/sqrt(length(x))})
 
 round(MeanVI, 3)
 
@@ -175,7 +175,7 @@ round(MeanVI+qt(.975,10)*SEVI, 3)
 #Setup dataframe to show results
 Technique <- rep(1:10, each=15)
 Variable <- rep(1:15, 10)
-Importance <- c(VIcomb)
+Importance <- c(MeanVI)
 IMPdf <- data.frame(Technique, Variable, Importance)
 
 ggplot(data=IMPdf, aes(x=Technique, y=Importance)) + geom_col() + facet_grid(. ~ Variable)

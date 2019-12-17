@@ -6,7 +6,7 @@ library(tidyverse)
 ####################################################################################
 #Create plots with one variable deleted and imputed under 4 different rho's 
 
-setwd("~/OneDrive - Lawrence University/Research/Imputation and Variable Importance")
+setwd("~/OneDrive - Lawrence University/Research/Imputation and Variable Importance/Sims/ajsage")
 
 #Simulation 1 - x1 deleted/imputed
 p <- Create_Combined_Graphic(type="MCAR", sim=1, xvar=1, xvarused=c(1,3,5), ylower=0, yupper=0.5)
@@ -123,7 +123,7 @@ ggsave(filename="Sim2_x5_rho75.eps", plot = p, device = "eps", path = NULL,
 ############################################################################
 #Plot Showing all variables together from a single simulation, fixed rho
 
-setwd("~/OneDrive - Lawrence University/Research/Imputation and Variable Importance")
+#setwd("~/OneDrive - Lawrence University/Research/Imputation and Variable Importance")
 
 load("sim1_rho_75_MCAR.Rdata")
 
@@ -143,7 +143,7 @@ ggsave(filename="AllVars_Sim1_x5_rho75_MCAR.eps", plot = last_plot(), device = "
 
 #################################################################################
 #Delete/Impute Simulation Using Boston Housing
-load("MVVIMP_BH_MNAR.Rdata")
+load("MVVIMP_BH_MCAR.Rdata")
 xvarused <- c(1,4,6,7)
 
 A <- SummaryFunc(MVVIMP)
@@ -158,7 +158,7 @@ p2
 
 A <- SummaryFunc(MVVIMP)
 dfList <- lapply(X=1:5, FUN=Summarydf, Array=A, xvar=3)
-p3 <- Createplot(dfList, xvar=xvarused[3])+ theme(legend.position = "bottom")+ylim(c(0, .3))+ggtitle("Avg. Number of Rooms")
+p3 <- Createplot(dfList, xvar=xvarused[3])+ theme(legend.position = "bottom")+ylim(c(0, .4))+ggtitle("Avg. Number of Rooms")
 p3
 
 A <- SummaryFunc(MVVIMP)
@@ -174,14 +174,14 @@ p <- grid.arrange(arrangeGrob(p1 + theme(legend.position="none"),
                               nrow=2),
                   mylegend, nrow=2,heights=c(10, 1))
 p
-ggsave(filename="BH_Sim_MNAR.eps", plot = p, device = "eps", path = NULL,
+ggsave(filename="BH_Sim_MCAR.eps", plot = p, device = "eps", path = NULL,
        scale = 1, width = 7, height = 7, units = "in",
        dpi = 300, limitsize = TRUE)
 
 
 #################################################################################
 #Delete/Impute Simulation Using STEM
-load("MVVIMP_STEM_MNAR.Rdata")
+load("MVVIMP_STEM_MCAR.Rdata")
 xvarused <- c(1,2,6,14)
 #1 - ACT composite
 #2 - High School GPA
@@ -213,7 +213,7 @@ p <- grid.arrange(arrangeGrob(p1 + theme(legend.position="none"),
                               nrow=2),
                   mylegend, nrow=2,heights=c(10, 1))
 p
-ggsave(filename="STEM_Sim_MNAR.eps", plot = p, device = "eps", path = NULL,
+ggsave(filename="STEM_Sim_MCAR.eps", plot = p, device = "eps", path = NULL,
        scale = 1, width = 7, height = 7, units = "in",
        dpi = 300, limitsize = TRUE)
 
